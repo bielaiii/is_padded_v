@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cstdlib>
 #include <iostream>
 #include <optional>
 #include <type_traits>
@@ -51,8 +52,6 @@ constexpr size_t binary_search(long) {
   }
 }
 
-// constexpr size_t max_count = binary_search<baz, 0, 20, 1>(1l);
-
 template <typename T, size_t... begin, size_t... agg, size_t... end>
 constexpr auto aggregate_initable(index_sequence<begin...>,
                                   index_sequence<agg...>,
@@ -95,15 +94,14 @@ constexpr auto enable_buildin_array(index_sequence<begin...>,
 }
 
 template <typename T, size_t... begin, size_t... agg, size_t... end>
-constexpr auto continuous_array(index_sequence<begin...>,
-                                index_sequence<agg...>, index_sequence<end...>)
-    -> decltype(T{AnyType{begin}..., {AnyType{agg}...}, AnyType{end}...}, 0);
+constexpr auto continuous_array(index_sequence<begin...>)
+    -> decltype(T{AnyType{begin}..., {AnyType{}, AnyType{}}}, 0);
 
-template <typename T, int begin, int agg, int end>
+template <typename T, int begin>
 constexpr auto should_dive_in(long long)
-    -> decltype(continuous_array<T>(make_index_sequence<begin>{},
-                                    make_index_sequence<agg>{},
-                                    make_index_sequence<end>{}),
+    -> decltype(continuous_array<T>(make_index_sequence<begin>{}
+
+                                    ),
                 0ull) {
   return 1;
 }
@@ -129,7 +127,7 @@ constexpr auto aggregate_with_2_element(index_sequence<begin...>,
   return 1;
 }
 
-template <typename T, size_t max_count, size_t... begin, size_t... end>
+/* template <typename T, size_t max_count, size_t... begin, size_t... end>
 constexpr auto pass_struct(index_sequence<begin...>, index_sequence<end...>,
                            int) -> decltype(0u) {
 
@@ -145,6 +143,27 @@ constexpr auto pass_struct(index_sequence<begin...>, index_sequence<end...>,
   static_assert(sizeof...(begin) + sizeof...(end) == max_count + 1,
                 "not match");
 
+  return 0;
+} */
+
+template <typename T, size_t... begin, size_t... agg, size_t... end>
+constexpr auto detect_struct(index_sequence<begin...>, index_sequence<agg...>,
+                             index_sequence<end...>)
+    -> decltype(T{AnyType{begin}..., {AnyType{agg}...}, AnyType{end}...}, 0) {
+  return 314;
+}
+
+template <typename T, size_t begin, size_t agg, size_t end>
+constexpr auto pass_struct(long long)
+    -> decltype(detect_struct<T>(make_index_sequence<begin>{},
+                                 make_index_sequence<agg>{},
+                                 make_index_sequence<end>{}),
+                0) {
+  return 1;
+}
+
+template <typename T, size_t begin, size_t agg, size_t end>
+constexpr auto pass_struct(int) {
   return 0;
 }
 
@@ -186,33 +205,23 @@ template <typename T, int max_count, int begin, int end>
 constexpr size_t count_field(size_t field) {
   if constexpr (end <= 0) {
     return field;
-  } else if constexpr (should_dive_in<T, begin>(1ll)) {
+  }
+#if 1
+  else if constexpr (pass_struct<T, begin, 2, max_count - begin - 1>(1ll) ==
+                     1) {
+    return count_field<T, max_count, begin + 1, end - 1>(field + 1);
+  }
+#endif
+
+  else if constexpr (should_dive_in<T, begin>(1ll)) {
     constexpr auto remain =
         binary_search_array_size<T, begin, 1, max_count - begin>(1ll);
     return count_field<T, max_count, begin + remain, end - remain>(field + 1);
   } else {
     return count_field<T, max_count, begin + 1, end - 1>(field + 1);
   }
-
-  // return 0;
 }
 
-template <typename T, size_t... begin, size_t... agg, size_t... end>
-constexpr auto detect_struct(index_sequence<begin...>, index_sequence<agg...>,
-                             index_sequence<end...>)
-    -> decltype(T{AnyType{begin}..., {AnyType{agg}...}, AnyType{end}...}, 0);
-
-template <typename T, size_t begin, size_t agg, size_t end>
-constexpr auto pass_struct(long long)->decltype(detect_struct<T>(
-    make_index_sequence<begin>{}, make_index_sequence<agg>{},
-    make_index_sequence<end>{}, 0)) {
-  return 1;
-}
-
-template <typename T, size_t begin, size_t agg, size_t end>
-constexpr auto pass_struct(int) {
-  return 0;
-}
 struct bbb {
   char a;
   float f;
@@ -225,40 +234,23 @@ struct fff {
 };
 
 struct aaa {
+  fff f_;
   bbb b[10];
-  // int arr[3];
   int a;
   char c;
 };
 struct qweqwe {
-  // int arr[3];
   int a;
   aaa temp[3];
   char c;
 };
 
 int main() {
-  // cout << should_dive_in<fff, 1, 1>(1ll) << endl;
-  // cout << should_dive_in<fff, 0, 1>(1ll) << endl;
-  // cout << should_dive_in<fff, 4, 1>(1ll) << endl;
-  // cout << count_field<fff, 5, 0, 4, 5>(0) << endl;
-  // cout << midder_v<fff, 2, 4> << endl;
-  // cout << enable_buildin_array<foo>(make_index_sequence<2>{},
-  // make_index_sequence<4>{}, 1ll) << endl;
-  // cout << binary_search_array_size<fff, 1, 1, 4>(1ll) << endl;
-  // cout << binary_search_array_size<aaa, 0, 1, 12>(1ll) << endl;
-  // cout << binary_search_array_size<qweqwe, 1, 1, 4>(1ll) << endl;
-  //cout << should_dive_in<fff, 0, 2, >(1ll) << endl;
-  cout << pass_struct<fff, 5>(1, 4, 1ll) << endl;
-
-  // cout << count_field<fff, 5, 0, 5>(0) << endl;
-  // cout << count_field<aaa, 12, 0, 12>(0) << endl;
-  // cout << count_field<qweqwe, 5, 0, 5>(0) << endl;
-  // cout << count_field<fff, 5, 0, 5, 0>(0) << endl;
-  // cout << count_field<fff, 5, 0, 5, 0>(0) << endl;
-  //  cout << count_field<fff, 5, 1, 4, 1>(5) << endl;
-  //   cout << continuous_array<fff>(make_index_sequence<1>{},
-  //   make_index_sequence<2>{}) <<endl;
-  //   auto f_ = fff{{}, {1, 1}, {}};
+  //cout << pass_struct<fff, 0, 2, 5 - 0 - 1>(1ll) << endl;
+  //cout << pass_struct<fff, 1, 2, 5 - 1 - 1>(1ll) << endl;
+  //cout << should_dive_in<fff, 1>(1ll) << endl;
+  cout << count_field<fff, 5, 0, 5>(0) << endl;
+  cout << count_field<qweqwe, 5, 0, 5>(0) << endl;
+  cout << count_field<aaa, 13, 0, 13>(0) << endl;
   return 0;
 }
