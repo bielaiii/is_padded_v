@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <type_traits>
 #include <utility>
-using namespace std;
+//using namespace std;
 
 struct AnyType {
   size_t ignore;
@@ -10,12 +10,12 @@ struct AnyType {
 };
 
 template <typename T, size_t... N>
-constexpr auto try_init_impl(index_sequence<N...>)
+constexpr auto try_init_impl(std::index_sequence<N...>)
     -> decltype(T{AnyType{N}...});
 
 template <typename T, size_t N>
 constexpr auto try_init(long long)
-    -> decltype(try_init_impl<T>(make_index_sequence<N>{}), true) {
+    -> decltype(try_init_impl<T>(std::make_index_sequence<N>{}), true) {
   return true;
 }
 
@@ -46,16 +46,16 @@ constexpr size_t binary_search(long) {
 }
 
 template <typename T, size_t... begin, size_t... agg, size_t... end>
-constexpr auto aggregate_initable(index_sequence<begin...>,
-                                  index_sequence<agg...>,
-                                  index_sequence<end...>)
+constexpr auto aggregate_initable(std::index_sequence<begin...>,
+                                  std::index_sequence<agg...>,
+                                  std::index_sequence<end...>)
     -> decltype(T{AnyType{begin}..., {AnyType{agg}...}, AnyType{end}...});
 
 template <typename T, size_t begin, size_t agg, size_t end>
 constexpr auto pass_struct_aggeregate(long long)
-    -> decltype(aggregate_initable<T>(make_index_sequence<begin>{},
-                                      make_index_sequence<agg>{},
-                                      make_index_sequence<end>{}),
+    -> decltype(aggregate_initable<T>(std::make_index_sequence<begin>{},
+                                      std::make_index_sequence<agg>{},
+                                      std::make_index_sequence<end>{}),
                 0ull) {
   return 1;
 }
@@ -69,8 +69,8 @@ template <typename T, size_t max_count> const size_t try_aggregate_init() {
 }
 
 template <typename T, size_t... begin, size_t... agg>
-constexpr auto enable_buildin_array(index_sequence<begin...>,
-                                    index_sequence<agg...>, long long)
+constexpr auto enable_buildin_array(std::index_sequence<begin...>,
+                                    std::index_sequence<agg...>, long long)
     -> decltype(T{AnyType{begin}...,
                   {
                       AnyType{agg}...,
@@ -80,19 +80,19 @@ constexpr auto enable_buildin_array(index_sequence<begin...>,
 }
 
 template <typename T, size_t... begin, size_t... agg>
-constexpr auto enable_buildin_array(index_sequence<begin...>,
-                                    index_sequence<agg...>, int)
+constexpr auto enable_buildin_array(std::index_sequence<begin...>,
+                                    std::index_sequence<agg...>, int)
     -> decltype(-1) {
   return 0;
 }
 
 template <typename T, size_t... begin, size_t... agg, size_t... end>
-constexpr auto continuous_array(index_sequence<begin...>)
+constexpr auto continuous_array(std::index_sequence<begin...>)
     -> decltype(T{AnyType{begin}..., {AnyType{}, AnyType{}}}, 0);
 
 template <typename T, int begin>
 constexpr auto should_dive_in(long long)
-    -> decltype(continuous_array<T>(make_index_sequence<begin>{}
+    -> decltype(continuous_array<T>(std::make_index_sequence<begin>{}
 
                                     ),
                 0ull) {
@@ -104,8 +104,8 @@ template <typename T, int begin> constexpr auto should_dive_in(int) {
 }
 
 template <typename T, size_t max_count, size_t... begin, size_t... end>
-constexpr auto aggregate_with_2_element(index_sequence<begin...>,
-                                        index_sequence<end...>, long long)
+constexpr auto aggregate_with_2_element(std::index_sequence<begin...>,
+                                        std::index_sequence<end...>, long long)
     -> decltype(T{AnyType{begin}..., {AnyType{end}...}}, 0u) {
 
   if constexpr (sizeof...(end) == 0) {
@@ -113,7 +113,7 @@ constexpr auto aggregate_with_2_element(index_sequence<begin...>,
   } else {
     constexpr auto begin_ = sizeof...(begin);
     constexpr auto end_ = sizeof...(end);
-    aggregate_with_2_element<T, max_count>(make_index_sequence<begin_ + 1>{},
+    aggregate_with_2_element<T, max_count>(std::make_index_sequence<begin_ + 1>{},
                                            1ll);
   }
   static_assert(sizeof...(begin) + sizeof...(end) == max_count, "not match");
@@ -140,17 +140,17 @@ constexpr auto pass_struct(index_sequence<begin...>, index_sequence<end...>,
 } */
 
 template <typename T, size_t... begin, size_t... agg, size_t... end>
-constexpr auto detect_struct(index_sequence<begin...>, index_sequence<agg...>,
-                             index_sequence<end...>)
+constexpr auto detect_struct(std::index_sequence<begin...>, std::index_sequence<agg...>,
+                             std::index_sequence<end...>)
     -> decltype(T{AnyType{begin}..., {AnyType{agg}...}, AnyType{end}...}, 0) {
   return 314;
 }
 
 template <typename T, size_t begin, size_t agg, size_t end>
 constexpr auto pass_struct(long long)
-    -> decltype(detect_struct<T>(make_index_sequence<begin>{},
-                                 make_index_sequence<agg>{},
-                                 make_index_sequence<end>{}),
+    -> decltype(detect_struct<T>(std::make_index_sequence<begin>{},
+                                 std::make_index_sequence<agg>{},
+                                 std::make_index_sequence<end>{}),
                 0) {
   return 1;
 }
@@ -164,9 +164,9 @@ template <typename T, size_t begin, size_t agg, size_t end>
 constexpr size_t test_build_in_array_size() {
   if constexpr (end - begin <= 1) {
     return 0;
-  } else if constexpr (!enable_buildin_array<T>(make_index_sequence<begin>{},
-                                                make_index_sequence<agg>{},
-                                                make_index_sequence<end>{})) {
+  } else if constexpr (!enable_buildin_array<T>(std::make_index_sequence<begin>{},
+                                                std::make_index_sequence<agg>{},
+                                                std::make_index_sequence<end>{})) {
     return test_build_in_array_size<T, begin + 1, agg + 1, end - 1>();
   } else {
     return agg;
@@ -185,8 +185,8 @@ constexpr int binary_search_array_size(long long) {
   constexpr int mid = midder_v<left, right>;
   if constexpr (right - left <= 1 || mid == left || mid == right) {
     return right - 1;
-  } else if constexpr (enable_buildin_array<T>(make_index_sequence<front>{},
-                                               make_index_sequence<mid>{},
+  } else if constexpr (enable_buildin_array<T>(std::make_index_sequence<front>{},
+                                               std::make_index_sequence<mid>{},
                                                0ll)) {
     return binary_search_array_size<T, front, mid, right>(0ll);
   } else {
@@ -194,36 +194,36 @@ constexpr int binary_search_array_size(long long) {
   }
 }
 
-template <typename T, int max_count, int begin, int end>
-constexpr size_t count_unique_field(size_t field) {
+template <typename T, int max_count, int begin, int end, size_t field>
+constexpr size_t count_unique_field() {
   if constexpr (end <= 0) {
     return field;
   }
 #if 1
   else if constexpr (pass_struct<T, begin, 2, max_count - begin - 1>(1ll) ==
                      1) {
-    return count_unique_field<T, max_count, begin + 1, end - 1>(field + 1);
+    return count_unique_field<T, max_count, begin + 1, end - 1, field + 1>();
   }
 #endif
 
   else if constexpr (should_dive_in<T, begin>(1ll)) {
     constexpr auto remain =
         binary_search_array_size<T, begin, 1, max_count - begin>(1ll);
-    return count_unique_field<T, max_count, begin + remain, end - remain>(
-        field + 1);
+    return count_unique_field<T, max_count, begin + remain, end - remain,
+                              field + 1>();
   } else {
-    return count_unique_field<T, max_count, begin + 1, end - 1>(field + 1);
+    return count_unique_field<T, max_count, begin + 1, end - 1, field + 1>();
   }
 }
 
 template <typename T> constexpr size_t get_member_field() {
   constexpr auto sz = binary_search<T, 0, 50, 50>(1l);
-  return count_unique_field<T, sz, 0, sz - 0>(0);
+  return count_unique_field<T, sz, 0, sz - 0, 0>();
 }
 template <typename T, size_t size_> constexpr size_t for_each_field_size();
 
 template <typename T,
-          enable_if_t<is_class_v<std::remove_reference_t<T>>, int> = 0>
+          std::enable_if_t<std::is_class_v<std::remove_reference_t<T>>, int> = 0>
 constexpr size_t plain_size(T) {
   using T_ = std::remove_reference_t<T>;
   constexpr size_t sz = binary_search<T_, 0, 50, 50>(1l);
@@ -232,7 +232,7 @@ constexpr size_t plain_size(T) {
 
 template <
     typename T, size_t N,
-    enable_if_t<is_class_v<remove_all_extents_t<T>> && is_array_v<T>, int> = 0>
+    std::enable_if_t<std::is_class_v<std::remove_all_extents_t<T>> && std::is_array_v<T>, int> = 0>
 constexpr size_t plain_size(T[N]) {
   using no_array_t = std::remove_all_extents_t<T>;
   constexpr size_t sz = binary_search<no_array_t, 0, 50, 50>(1l);
@@ -240,7 +240,7 @@ constexpr size_t plain_size(T[N]) {
 }
 
 template <typename T,
-          enable_if_t<!is_class_v<std::remove_reference_t<T>>, int> = 0>
+          std::enable_if_t<!std::is_class_v<std::remove_reference_t<T>>, int> = 0>
 constexpr size_t plain_size(T) {
   return sizeof(T);
 }
@@ -1106,11 +1106,11 @@ template <typename T> constexpr size_t plain_size_of_struct() {
   return for_each_field_size<T, unique_field>();
 }
 
-
-template<typename T>
+template <
+    typename T,
+    std::enable_if_t<std::is_standard_layout_v<T> && std::is_trivial_v<T>, int> = 0>
 struct is_padded {
   static constexpr bool value = plain_size_of_struct<T>() != sizeof(T);
 };
 
-template<typename T>
-inline constexpr bool is_padded_v = is_padded<T>::value;
+template <typename T> inline constexpr bool is_padded_v = is_padded<T>::value;
