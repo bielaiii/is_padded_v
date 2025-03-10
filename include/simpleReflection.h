@@ -3,12 +3,7 @@
 #include <type_traits>
 #include <utility>
 //using namespace std;
-
-struct AnyType {
-  size_t ignore;
-  template <typename T> operator T() noexcept;
-};
-
+#include"common_module.h"
 template <typename T, size_t... N>
 constexpr auto try_init_impl(std::index_sequence<N...>)
     -> decltype(T{AnyType{N}...});
@@ -173,12 +168,7 @@ constexpr size_t test_build_in_array_size() {
   }
 }
 
-template <int left, int right> struct Midder {
-  static constexpr int mid_ = (right - left) / 2 + left;
-};
 
-template <int left, int right>
-inline constexpr int midder_v = Midder<left, right>::mid_;
 
 template <typename T, int front, int left, int right>
 constexpr int binary_search_array_size(long long) {
@@ -217,7 +207,7 @@ constexpr size_t count_unique_field() {
 }
 
 template <typename T> constexpr size_t get_member_field() {
-  constexpr auto sz = binary_search<T, 0, 50, 50>(1l);
+  constexpr auto sz = binary_search<T, 0, MAX_SEARCH_COUNT, MAX_SEARCH_COUNT>(1l);
   return count_unique_field<T, sz, 0, sz - 0, 0>();
 }
 template <typename T, size_t size_> constexpr size_t for_each_field_size();
@@ -226,7 +216,7 @@ template <typename T,
           std::enable_if_t<std::is_class_v<std::remove_reference_t<T>>, int> = 0>
 constexpr size_t plain_size(T) {
   using T_ = std::remove_reference_t<T>;
-  constexpr size_t sz = binary_search<T_, 0, 50, 50>(1l);
+  constexpr size_t sz = binary_search<T_, 0, MAX_SEARCH_COUNT, MAX_SEARCH_COUNT>(1l);
   return for_each_field_size<T, sz>();
 }
 
@@ -235,7 +225,7 @@ template <
     std::enable_if_t<std::is_class_v<std::remove_all_extents_t<T>> && std::is_array_v<T>, int> = 0>
 constexpr size_t plain_size(T[N]) {
   using no_array_t = std::remove_all_extents_t<T>;
-  constexpr size_t sz = binary_search<no_array_t, 0, 50, 50>(1l);
+  constexpr size_t sz = binary_search<no_array_t, 0, MAX_SEARCH_COUNT, MAX_SEARCH_COUNT>(1l);
   return for_each_field_size<no_array_t, sz>() * N;
 }
 
@@ -244,36 +234,7 @@ template <typename T,
 constexpr size_t plain_size(T) {
   return sizeof(T);
 }
-// template <typename T,
-// enable_if_t<std::is_fundamental_v<std::remove_reference_t<T>>, int> = 0>
-// constexpr size_t plain_size(T ) {
-//   return sizeof(T);
-// }
-/* template <typename T, size_t size_> constexpr size_t for_each_field_size() {
-  if constexpr (size_ == 1) {
-    auto &&[_1] = T{};
-    return plain_size<_1>();
-  } else if constexpr (size_ == 2) {
-    auto &&[_1, _2] = T{};
-    return plain_size<decltype(_1)>(_1) + plain_size<decltype(_2)>(_2);
-  } else if constexpr (size_ == 3) {
-    auto &&[_1, _2, _3] = T{};
-    return plain_size<decltype(_1)>(_1) + plain_size<decltype(_2)>(_2) +
-           plain_size<decltype(_3)>(_3);
-  } else if constexpr (size_ == 4) {
-    auto &&[_1, _2, _3, _4] = T{};
-    return plain_size<decltype(_1)>(_1) + plain_size<decltype(_2)>(_2) +
-           plain_size<decltype(_3)>(_3) + plain_size<decltype(_4)>(_4);
-  } else if constexpr (size_ == 5) {
-    auto &&[_1, _2, _3, _4, _5] = T{};
-    return plain_size<decltype(_1)>(_1) + plain_size<decltype(_2)>(_2) +
-           plain_size<decltype(_3)>(_3) + plain_size<decltype(_4)>(_4) +
-           plain_size<decltype(_5)>(_5);
-  } else {
-    // static_assert(0, "should not print");
-    return -1;
-  }
-} */
+
 
 template <typename T, size_t size_> constexpr size_t for_each_field_size() {
   if constexpr (size_ == 1) {
